@@ -3,7 +3,10 @@ from dataset import MNIST
 from clip import CLIP
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
 import os
+
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'  # 设备
 
@@ -25,6 +28,8 @@ def train_model(dataloader):
     """
         训练模型
     """
+    losses = []  # 用于存储损失值
+
     for i in range(ITER_BATCH_COUNT):
         while True:  # 确保一个批次中一定有10张图片，并且这10张图片一定是不重复的数字。避免导致模型脑裂，长时间的loss下不去
             imgs, labels = next(iter(dataloader))
@@ -54,10 +59,23 @@ def train_model(dataloader):
         optimzer.zero_grad()
         loss.backward()
         optimzer.step()
+
+        losses.append(loss.item())  # 记录损失值
+
+        if i % 1000 == 0:
+            # 更新损失曲线
+            plt.cla()
+            plt.plot(losses)
+            plt.xlabel('Epoch')  # 设置 x 轴标签
+            plt.ylabel('Loss')  # 设置 y 轴标签
+            plt.pause(0.01)
+
         if i % 1000 == 0:
             print('iter:{},loss:{}'.format(i, loss))
             torch.save(model.state_dict(), '.model.pth')
             os.replace('.model.pth', 'model.pth')
+
+    plt.show()
 
 
 if __name__ == '__main__':
