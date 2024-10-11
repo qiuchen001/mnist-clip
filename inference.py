@@ -11,13 +11,16 @@ import matplotlib.pyplot as plt
 import torch
 from clip import CLIP
 import torch.nn.functional as F
+import os
+
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'  # 设备
 
 dataset = MNIST()  # 数据集
 
 model = CLIP().to(DEVICE)  # 模型
-model.load_state_dict(torch.load('model.pth'))
+model.load_state_dict(torch.load('model.pth', weights_only=True))
 
 model.eval()  # 预测模式
 
