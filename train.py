@@ -28,7 +28,7 @@ TARGET_COUNT=10 # 共10种数字
 dataloader=DataLoader(dataset,batch_size=BATCH_SIZE,shuffle=True,num_workers=10,persistent_workers=True)    # 数据加载器
 
 for i in range(ITER_BATCH_COUNT):
-    while True:
+    while True:  # 确保一个批次中一定有10张图片，并且这10张图片一定是不重复的数字。避免导致模型脑裂，长时间的loss下不去
         imgs,labels=next(iter(dataloader))
         if torch.unique(labels).shape[0]<TARGET_COUNT:  # 未覆盖10种数字
             continue
@@ -46,10 +46,10 @@ for i in range(ITER_BATCH_COUNT):
         labels=labels[indexes]
         break
 
-    logits=model(imgs.to(DEVICE),labels.to(DEVICE))
+    logits=model(imgs.to(DEVICE),labels.to(DEVICE))  # 拿到一批图片和分类ID，就可以调用clip模型，得到点积的矩阵
     
-    targets=torch.arange(0,TARGET_COUNT).to(DEVICE)
-    loss_i=F.cross_entropy(logits,targets)
+    targets=torch.arange(0,TARGET_COUNT).to(DEVICE)  # 生成文本和对应的图像的位置
+    loss_i=F.cross_entropy(logits,targets)  # 之后做交叉熵的损失计算
     loss_t=F.cross_entropy(logits.permute(1,0),targets)
     loss=(loss_i+loss_t)/2
     

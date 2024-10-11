@@ -28,9 +28,9 @@ class ImgEncoder(nn.Module):
         super().__init__()
         self.res_block1 = ResidualBlock(in_channels=1, out_channels=16, stride=2)  # (batch,16,14,14)
         self.res_block2 = ResidualBlock(in_channels=16, out_channels=4, stride=2)  # (batch,4,7,7)
-        self.res_block3 = ResidualBlock(in_channels=4, out_channels=1, stride=2)  # (batch,1,4,4)
-        self.wi = nn.Linear(in_features=16, out_features=8)
-        self.ln = nn.LayerNorm(8)
+        self.res_block3 = ResidualBlock(in_channels=4, out_channels=1, stride=2)  # (batch,1,4,4)  # 对输入图像进行三轮卷积
+        self.wi = nn.Linear(in_features=16, out_features=8)  # 卷积之后，再经过线性变化，变成宽度为8的向量
+        self.ln = nn.LayerNorm(8)  # 对图像进行归一化（论文中提到的一个点）
 
     def forward(self, x):
         x = self.res_block1(x)
@@ -44,4 +44,4 @@ class ImgEncoder(nn.Module):
 if __name__ == '__main__':
     img_encoder = ImgEncoder()
     out = img_encoder(torch.randn(1, 1, 28, 28))
-    print(out.shape)
+    print(out.shape)  # 从1通道，28*28，变成宽度为8的向量，从三维的变成了一个普通的宽度为8的
